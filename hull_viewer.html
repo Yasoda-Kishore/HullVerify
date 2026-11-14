@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Hull Verify</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#e8f1fa; --dim:#9db2c7; --panel:rgba(9,17,27,.78); --line:rgba(130,190,255,.16);
+    --green:#2fd48b; --amber:#f6b83c; --blue:#41a8ff; --red:#ff5d5d; --grey:#55637a;
+    --A:#ff8f5a; --B:#ffd166; --C:#37d39b;
+  }
+  *{box-sizing:border-box;margin:0}
+  html,body{height:100%}
+  body{font-family:Inter,system-ui,sans-serif;color:var(--ink);background:
+    radial-gradient(1200px 700px at 70% -10%, #0e3350 0%, transparent 60%),
+    linear-gradient(180deg,#09233a 0%,#061627 45%,#030b14 100%);overflow:hidden}
+  #scene{position:fixed;inset:0}
+  #vignette{position:fixed;inset:0;pointer-events:none;
+    background:radial-gradient(130% 100% at 50% 40%, transparent 55%, rgba(0,0,0,.55) 100%)}
+  .panel{position:fixed;background:var(--panel);border:1px solid var(--line);border-radius:16px;
+    backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 10px 40px rgba(0,0,0,.45)}
+  /* ---------- left: title + legend ---------- */
+  #hud{left:18px;top:18px;width:300px;padding:16px 18px}
+  #hud h1{font-size:19px;font-weight:800;letter-spacing:.2px}
+  #hud h1 span{color:var(--C)}
+  #hud .sub{color:var(--dim);font-size:11.5px;margin-top:3px;line-height:1.45}
+  #phase{margin-top:12px;font-size:12.5px;font-weight:600;display:flex;align-items:center;gap:8px}
+  #phase .dot{width:9px;height:9px;border-radius:50%;background:var(--C);box-shadow:0 0 10px var(--C)}
+  #phasebar{height:5px;border-radius:3px;background:#17293d;margin-top:8px;overflow:hidden}
+  #phasefill{height:100%;width:0%;background:linear-gradient(90deg,var(--C),#7de8c0);transition:width .2s}
+  .legend{margin-top:13px;display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;font-size:11.5px;color:var(--dim)}
+  .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:7px;vertical-align:-1px}
+  .btns{margin-top:13px;display:flex;gap:8px}
+  button{font:inherit;font-size:12px;font-weight:600;color:var(--ink);background:#14283d;
+    border:1px solid var(--line);border-radius:9px;padding:7px 13px;cursor:pointer}
+  button:hover{background:#1b3551}
+  select{font:inherit;font-size:12px;color:var(--ink);background:#14283d;border:1px solid var(--line);
+    border-radius:9px;padding:7px 9px}
+  #note{margin-top:11px;font-size:10.5px;color:#7b8ea3;line-height:1.5}
+  /* ---------- right: inspector ---------- */
+  #inspect{right:18px;top:18px;width:316px;padding:16px 18px;display:none}
+  #inspect h2{font-size:13px;font-weight:800;color:var(--dim);text-transform:uppercase;letter-spacing:1px}
+  #inspect .zone{font-size:17px;font-weight:800;margin-top:3px;text-transform:capitalize}
+  .chip{display:inline-block;margin-top:9px;font-size:12px;font-weight:700;padding:5px 11px;border-radius:999px}
+  #imgs{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}
+  #imgs figure img{width:100%;border-radius:9px;border:1px solid var(--line);display:block}
+  #imgs figcaption{font-size:10px;color:var(--dim);letter-spacing:1.4px;margin-top:4px;text-align:center}
+  #reason{margin-top:11px;font-size:12px;color:#c6d6e6;line-height:1.55;background:#0d1b2b;
+    border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+  #close{position:absolute;right:12px;top:12px;padding:3px 9px;border-radius:7px}
+  /* ---------- bottom: strategies + sliders ---------- */
+  #board{left:18px;right:18px;bottom:16px;padding:14px 20px 12px;display:flex;gap:26px;align-items:stretch}
+  #bars{flex:1.5;display:grid;grid-template-columns:repeat(4,1fr);gap:0 22px}
+  .metric h3{font-size:10.5px;color:var(--dim);text-transform:uppercase;letter-spacing:1.1px;margin-bottom:7px}
+  .bar{display:grid;grid-template-columns:14px 1fr 60px;gap:8px;align-items:center;margin:4px 0;font-size:11px}
+  .bar b{color:var(--dim);font-weight:800}
+  .track{height:9px;border-radius:5px;background:#132433;overflow:hidden}
+  .fill{height:100%;border-radius:5px;transition:width .25s}
+  .val{text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+  #sliders{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:3px 18px;align-content:start}
+  #sliders h3{grid-column:1/-1;font-size:10.5px;color:var(--dim);text-transform:uppercase;letter-spacing:1.1px;margin-bottom:3px}
+  .sl{font-size:10.6px;color:var(--dim)}
+  .sl .v{float:right;color:var(--ink);font-weight:700;font-variant-numeric:tabular-nums}
+  input[type=range]{width:100%;accent-color:var(--C);height:20px}
+  #foot{position:absolute;right:20px;bottom:6px;font-size:9.5px;color:#60758c}
+  #err{position:fixed;inset:0;display:none;place-items:center;background:rgba(3,10,18,.9);z-index:50;
+    text-align:center;font-size:14px;line-height:2}
+  /* ---------- operator approval (step 6) ---------- */
+  #plan{left:50%;top:86px;transform:translateX(-50%);width:430px;padding:16px 20px;display:none;z-index:20}
+  #plan h2{font-size:13px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--dim)}
+  #plan .big{font-size:15px;font-weight:800;margin-top:7px;line-height:1.5}
+  #plan .big b{font-variant-numeric:tabular-nums}
+  #plan .nRev{color:var(--amber)} #plan .nExp{color:var(--red)} #plan .nPho{color:var(--blue)}
+  #plan .ovr{font-size:11.5px;color:var(--dim);margin-top:5px}
+  #plan .btns{margin-top:12px}
+  #approve{background:#135a3e;border-color:#2fd48b55}
+  #approve:hover{background:#17724e}
+  #adjust.on{background:#5a4413;border-color:#f6b83c66}
+  #editbanner{font-size:11.5px;color:var(--amber);margin-top:9px;display:none;line-height:1.5}
+</style>
+</head>
+<body>
+<div id="scene"></div><div id="vignette"></div>
+
+<div class="panel" id="hud">
+  <h1>Hull<span>Verify</span> — verify, then revisit</h1>
+  <div class="sub">AI checks every cleaned area from before/after images; the robot revisits only what failed. Decisions sampled from our <b>measured</b> step-3 confusion matrix.</div>
+  <div id="phase"><span class="dot"></span><span id="phasetxt">Cleaning pass 1 of 1</span></div>
+  <div id="phasebar"><div id="phasefill"></div></div>
+  <div class="legend">
+    <span><i style="background:var(--grey)"></i>not checked</span>
+    <span><i style="background:var(--green)"></i>sufficient</span>
+    <span><i style="background:var(--amber)"></i>more cleaning</span>
+    <span><i style="background:var(--blue)"></i>unclear image</span>
+    <span><i style="background:var(--red)"></i>expert needed</span>
+    <span><i style="background:#8fa0b5"></i>cleaned, unchecked</span>
+  </div>
+  <div class="btns">
+    <button id="replay">↺ Replay</button>
+    <select id="speed"><option value="1">1×</option><option value="2" selected>2×</option><option value="4">4×</option></select>
+    <button id="spin">◉ Spin</button>
+  </div>
+  <div id="note">Synthetic demo: zone fouling &amp; cleaning probabilities are stated assumptions; images are computer-generated. Click any hull area.</div>
+</div>
+
+<div class="panel" id="inspect">
+  <button id="close">✕</button>
+  <h2 id="aid">area</h2>
+  <div class="zone" id="azone">zone</div>
+  <span class="chip" id="achip">decision</span>
+  <div id="imgs">
+    <figure><img id="imgb" alt="before"><figcaption>BEFORE</figcaption></figure>
+    <figure><img id="imga" alt="after"><figcaption>AFTER</figcaption></figure>
+  </div>
+  <div id="reason"></div>
+</div>
+
+<div class="panel" id="board">
+  <div id="bars"></div>
+  <div id="sliders">
+    <h3>Cost inputs — all editable assumptions</h3>
+  </div>
+  <div id="foot">Context only (IMO GreenVoyage2050): typical full in-water clean $5k–$50k — not our result.</div>
+</div>
+
+<div class="panel" id="plan">
+  <h2>Operator approval required</h2>
+  <div class="big">Recommended plan:&nbsp; revisit <b class="nRev" id="nRev">0</b> areas · send <b class="nExp" id="nExp">0</b> to an expert · <b class="nPho" id="nPho">0</b> re-photos taken</div>
+  <div class="ovr" id="nOvr"></div>
+  <div class="btns">
+    <button id="approve">✓ Approve plan</button>
+    <button id="adjust">✎ Adjust plan</button>
+    <button id="csvbtn">⬇ Decision log (CSV)</button>
+  </div>
+  <div id="editbanner">Edit mode — click any hull area to cycle its action:
+    sufficient → more cleaning → expert. Then press Approve.</div>
+</div>
+
+<div id="err"><div>⚠ <b>sim_results.js not found.</b><br>Run <code>python3 step4_simulation.py</code> in this folder, then reopen this page.</div></div>
+
+<script src="sim_results.js"></script>
+<script type="importmap">
+{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js",
+"three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+
+if(!window.SIM_DATA){document.getElementById('err').style.display='grid';throw new Error('no data');}
+const DATA=window.SIM_DATA, COLS=DATA.grid.cols, ROWS=DATA.grid.rows;
+const areas=DATA.demo_hull.slice().sort((a,b)=>a.order-b.order);
+const byCell={}; areas.forEach(a=>byCell[a.col+'_'+a.row]=a);
+
+/* ================= hull parametric shape ================= */
+const L=10, BEAM=3.2, DRAFT=2.6;
+const halfBeam=x=>{const t=Math.min(Math.abs(x)/L,1);
+  return x>=0 ? BEAM*Math.pow(1-Math.pow(t,2.6),0.75) : BEAM*Math.pow(1-Math.pow(t,4.0),0.55);};
+const draft=x=>{const t=Math.min(Math.abs(x)/L,1); return DRAFT*Math.pow(1-Math.pow(t,3.2),0.6);};
+function surf(u,g){                       // u:0 stern→1 bow, g:0 port wl→.5 keel→1 stbd wl
+  const x=u*2*L-L, t=1-Math.abs(2*g-1), side=g<0.5?-1:1;
+  const w=halfBeam(x)*Math.pow(Math.cos(t*Math.PI/2),0.55);
+  const y=-draft(x)*Math.pow(Math.sin(t*Math.PI/2),1.0);
+  return new THREE.Vector3(x,y,side*w);
+}
+function surfN(u,g){const e=1e-3,p=surf(u,g),
+  du=surf(Math.min(u+e,1),g).sub(p),dg=surf(u,Math.min(g+e,1)).sub(p);
+  const n=new THREE.Vector3().crossVectors(dg,du).normalize();
+  if(n.y>0&&Math.abs(2*g-1)>.98)n.multiplyScalar(1); return n;}
+
+/* ================= renderer / scene ================= */
+const holder=document.getElementById('scene');
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setSize(innerWidth,innerHeight); holder.appendChild(renderer.domElement);
+renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.18;
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x071627);
+scene.fog=new THREE.FogExp2(0x071627,0.012);
+const cam=new THREE.PerspectiveCamera(42,innerWidth/innerHeight,.1,300);
+cam.position.set(15.5,-5.2,13.5);
+const controls=new OrbitControls(cam,renderer.domElement);
+controls.target.set(0,-1.1,0); controls.enableDamping=true; controls.dampingFactor=.06;
+controls.autoRotate=true; controls.autoRotateSpeed=.55;
+controls.minPolarAngle=Math.PI*.22; controls.maxPolarAngle=Math.PI*.97;
+controls.minDistance=7; controls.maxDistance=45;
+addEventListener('pointerdown',()=>controls.autoRotate=false);
+document.getElementById('spin').onclick=()=>controls.autoRotate=!controls.autoRotate;
+
+scene.add(new THREE.HemisphereLight(0xcfe7ff,0x16334d,1.15));
+const key=new THREE.DirectionalLight(0xffffff,1.25); key.position.set(8,12,6); scene.add(key);
+const rim=new THREE.DirectionalLight(0x4aa8ff,.85); rim.position.set(-10,3,-8); scene.add(rim);
+const bounce=new THREE.DirectionalLight(0x58b7e8,1.5); bounce.position.set(2,-12,4); scene.add(bounce);
+const bounce2=new THREE.DirectionalLight(0x3f88c0,.8); bounce2.position.set(-4,-8,-9); scene.add(bounce2);
+
+/* ================= patch texture ================= */
+const TW=1280,TH=640,CW=TW/COLS,CH=TH/ROWS;
+const cv=document.createElement('canvas');cv.width=TW;cv.height=TH;
+const cx=cv.getContext('2d');
+const tex=new THREE.CanvasTexture(cv); tex.anisotropy=8; tex.colorSpace=THREE.SRGBColorSpace;
+const COLORS={none:'#64748c',cleaned:'#9cadc2',sufficient:'#2fd48b',more_cleaning:'#f6b83c',
+              unclear_image:'#41a8ff',expert_inspection:'#ff5d5d'};
+const state={}; areas.forEach(a=>state[a.id]='none');
+let hoverId=null;
+function drawCell(a){
+  const x=a.col*CW,y=a.row*CH,g=5;
+  cx.fillStyle='#0d141d'; cx.fillRect(x,y,CW,CH);
+  cx.fillStyle=COLORS[state[a.id]]||COLORS.none;
+  cx.beginPath(); cx.roundRect(x+g,y+g,CW-2*g,CH-2*g,10); cx.fill();
+  const gr=cx.createLinearGradient(0,y,0,y+CH);
+  gr.addColorStop(0,'rgba(255,255,255,.16)');gr.addColorStop(.5,'rgba(255,255,255,0)');
+  gr.addColorStop(1,'rgba(0,0,0,.22)');
+  cx.fillStyle=gr; cx.beginPath(); cx.roundRect(x+g,y+g,CW-2*g,CH-2*g,10); cx.fill();
+  if(['sea_chest','propeller','anodes'].includes(a.zone)){
+    cx.strokeStyle='rgba(255,255,255,.55)';cx.setLineDash([7,6]);cx.lineWidth=3;
+    cx.beginPath();cx.roundRect(x+g+2,y+g+2,CW-2*g-4,CH-2*g-4,8);cx.stroke();cx.setLineDash([]);}
+  if(hoverId===a.id){cx.strokeStyle='#fff';cx.lineWidth=5;
+    cx.beginPath();cx.roundRect(x+g+1,y+g+1,CW-2*g-2,CH-2*g-2,9);cx.stroke();}
+}
+function redraw(){areas.forEach(drawCell);tex.needsUpdate=true;}
+redraw();
+
+/* ================= hull meshes ================= */
+function hullGeometry(){
+  const NU=200,NG=100,pos=[],uv=[],idx=[];
+  for(let i=0;i<=NU;i++)for(let j=0;j<=NG;j++){
+    const u=i/NU,g=j/NG,p=surf(u,g);
+    pos.push(p.x,p.y,p.z); uv.push(u,g);}
+  for(let i=0;i<NU;i++)for(let j=0;j<NG;j++){
+    const a=i*(NG+1)+j,b=a+NG+1;
+    idx.push(a,b,a+1,b,b+1,a+1);}
+  const ge=new THREE.BufferGeometry();
+  ge.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));
+  ge.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));
+  ge.setIndex(idx); ge.computeVertexNormals(); return ge;
+}
+const hull=new THREE.Mesh(hullGeometry(),
+  new THREE.MeshStandardMaterial({map:tex,roughness:.58,metalness:.05,
+    emissive:0xffffff,emissiveMap:tex,emissiveIntensity:.38}));
+scene.add(hull);
+
+function bandGeometry(y0,y1,inset){          // topside band above waterline
+  const NU=200,pos=[],idx=[],norm=[];
+  for(const side of[-1,1])for(let i=0;i<=NU;i++){
+    const u=i/NU,x=u*2*L-L,w=Math.max(halfBeam(x),0.001);
+    pos.push(x,y0,side*w, x,y1,side*w*inset);
+  }
+  for(const s of[0,1]){const off=s*(NU+1)*2;
+    for(let i=0;i<NU;i++){const a=off+i*2;
+      if(s===0)idx.push(a,a+2,a+1,a+1,a+2,a+3); else idx.push(a,a+1,a+2,a+1,a+3,a+2);}}
+  const ge=new THREE.BufferGeometry();
+  ge.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));
+  ge.setIndex(idx);ge.computeVertexNormals();return ge;
+}
+const topside=new THREE.Mesh(bandGeometry(0.14,0.95,0.965),
+  new THREE.MeshStandardMaterial({color:0x1b2029,roughness:.5,metalness:.4}));
+scene.add(topside);
+const boot=new THREE.Mesh(bandGeometry(0.0,0.14,1.0),
+  new THREE.MeshStandardMaterial({color:0xb8323a,roughness:.5,metalness:.2}));
+scene.add(boot);
+(function deck(){                              // simple deck cap
+  const NU=120,pos=[],idx=[];
+  for(let i=0;i<=NU;i++){const u=i/NU,x=u*2*L-L,w=Math.max(halfBeam(x)*0.965,0.001);
+    pos.push(x,0.95,-w, x,0.95,w);}
+  for(let i=0;i<NU;i++){const a=i*2;idx.push(a,a+1,a+2,a+1,a+3,a+2);}
+  const ge=new THREE.BufferGeometry();
+  ge.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));
+  ge.setIndex(idx);ge.computeVertexNormals();
+  scene.add(new THREE.Mesh(ge,new THREE.MeshStandardMaterial({color:0x242c37,roughness:.75})));
+})();
+
+/* water + marine snow */
+const water=new THREE.Mesh(new THREE.CircleGeometry(90,64),
+  new THREE.MeshBasicMaterial({color:0x2d9bff,transparent:true,opacity:.07,side:THREE.DoubleSide,depthWrite:false}));
+water.rotation.x=-Math.PI/2; water.position.y=0.001; scene.add(water);
+const snowN=500,sp=new Float32Array(snowN*3);
+for(let i=0;i<snowN;i++){sp[i*3]=(Math.random()-.5)*70;sp[i*3+1]=-Math.random()*22-.5;sp[i*3+2]=(Math.random()-.5)*70;}
+const snowGe=new THREE.BufferGeometry();snowGe.setAttribute('position',new THREE.BufferAttribute(sp,3));
+const snow=new THREE.Points(snowGe,new THREE.PointsMaterial({color:0x9fd4ff,size:.07,transparent:true,opacity:.45,depthWrite:false}));
+scene.add(snow);
+
+/* ================= robot ================= */
+const robot=new THREE.Group();
+{
+  const body=new THREE.Mesh(new THREE.BoxGeometry(.46,.15,.3),
+    new THREE.MeshStandardMaterial({color:0xffc83d,roughness:.35,metalness:.3}));
+  body.position.y=.12; robot.add(body);
+  for(const s of[-1,1]){const tr=new THREE.Mesh(new THREE.BoxGeometry(.5,.1,.09),
+    new THREE.MeshStandardMaterial({color:0x14181f,roughness:.9}));
+    tr.position.set(0,.05,s*.17);robot.add(tr);}
+  const dome=new THREE.Mesh(new THREE.SphereGeometry(.07,16,12),
+    new THREE.MeshStandardMaterial({color:0x53e7ff,emissive:0x2ab8e8,emissiveIntensity:2.2}));
+  dome.position.set(.14,.22,0);robot.add(dome);
+  const lamp=new THREE.PointLight(0x6fe3ff,14,4.5);lamp.position.set(.1,.35,0);robot.add(lamp);
+}
+robot.scale.setScalar(1.6);
+scene.add(robot);
+const ring=new THREE.Mesh(new THREE.RingGeometry(.42,.56,40),
+  new THREE.MeshBasicMaterial({color:0x6fe3ff,transparent:true,opacity:.85,side:THREE.DoubleSide}));
+scene.add(ring);
+const beam=new THREE.Mesh(new THREE.CylinderGeometry(.03,.3,3.4,16,1,true),
+  new THREE.MeshBasicMaterial({color:0x6fe3ff,transparent:true,opacity:.3,
+    blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));
+scene.add(beam);
+function placeRobot(u,g,headU,headG){
+  const p=surf(u,g),n=surfN(u,g);
+  robot.position.copy(p).addScaledVector(n,.1);
+  ring.position.copy(p).addScaledVector(n,.03);
+  const ahead=surf(Math.min(Math.max(headU,0),1),Math.min(Math.max(headG,0),1)).addScaledVector(n,.1);
+  const m=new THREE.Matrix4().lookAt(robot.position,ahead,n);
+  robot.quaternion.setFromRotationMatrix(m);
+  ring.quaternion.copy(robot.quaternion);
+  ring.rotateX(Math.PI/2);
+  beam.position.copy(p).addScaledVector(n,1.75);
+  beam.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),n);
+}
+const cellUG=a=>({u:(a.col+.5)/COLS,g:(a.row+.5)/ROWS});
+
+/* ================= timeline + operator approval (step 6) ================= */
+const ovr={};                                   // operator overrides: id -> decision
+const decisionOf=a=>ovr[a.id]||a.decision;
+const phase1={name:'Phase 1 · Cleaning pass',list:areas,per:.09,
+  on:a=>{state[a.id]='cleaned';}};
+const phase2={name:'Phase 2 · AI verification',list:areas,per:.11,
+  on:a=>{state[a.id]=a.rephoto&&a.pred_first==='unclear_image'?'unclear_image':a.decision;
+         if(a.rephoto)setTimeout(()=>{if(!ovr[a.id]){state[a.id]=a.decision;drawCell(a);tex.needsUpdate=true;}},650/SPEED);}};
+const phase3={name:'Phase 3 · Targeted revisits',list:[],per:.5,
+  on:a=>{state[a.id]=(a.final_dirty&&!ovr[a.id])?'more_cleaning':'sufficient';}};
+// stage: 0=cleaning 1=verification 2=awaiting approval 3=revisits
+let SPEED=2,stage=0,stepI=0,t=0,done=false,awaiting=false,editMode=false,approvedAt=null;
+const cur=()=>stage===0?phase1:stage===1?phase2:phase3;
+document.getElementById('speed').onchange=e=>SPEED=+e.target.value;
+const phasetxt=document.getElementById('phasetxt'),phasefill=document.getElementById('phasefill');
+const planEl=document.getElementById('plan');
+
+function resetRun(){areas.forEach(a=>{state[a.id]='none';delete ovr[a.id];});
+  stage=0;stepI=0;t=0;done=false;awaiting=false;editMode=false;approvedAt=null;
+  planEl.style.display='none';document.getElementById('editbanner').style.display='none';
+  document.getElementById('adjust').classList.remove('on');redraw();}
+document.getElementById('replay').onclick=resetRun;
+
+function refreshPlan(){
+  const nRev=areas.filter(a=>decisionOf(a)==='more_cleaning').length;
+  const nExp=areas.filter(a=>decisionOf(a)==='expert_inspection').length;
+  const nPho=areas.filter(a=>a.rephoto).length;
+  const nOvr=Object.keys(ovr).length;
+  document.getElementById('nRev').textContent=nRev;
+  document.getElementById('nExp').textContent=nExp;
+  document.getElementById('nPho').textContent=nPho;
+  document.getElementById('nOvr').textContent=nOvr?
+    `${nOvr} AI decision${nOvr>1?'s':''} overridden by the operator (logged).`:
+    'No operator overrides.';
+}
+function openPlan(){refreshPlan();planEl.style.display='block';
+  phasetxt.textContent='Awaiting operator approval';phasefill.style.width='100%';}
+document.getElementById('adjust').onclick=()=>{editMode=!editMode;
+  document.getElementById('adjust').classList.toggle('on',editMode);
+  document.getElementById('editbanner').style.display=editMode?'block':'none';};
+document.getElementById('approve').onclick=()=>{
+  if(stage!==2)return;
+  approvedAt=new Date().toISOString();
+  phase3.list=areas.filter(a=>decisionOf(a)==='more_cleaning');
+  editMode=false;document.getElementById('editbanner').style.display='none';
+  document.getElementById('adjust').classList.remove('on');
+  planEl.style.display='none';awaiting=false;stage=3;stepI=0;t=0;
+  if(!phase3.list.length)finish();
+};
+function logRows(){
+  const tme=approvedAt||new Date().toISOString();
+  return areas.map(a=>[a.id,a.zone,a.before_img,a.after_img,
+    a.pred_first,decisionOf(a),
+    ovr[a.id]?('overridden_to_'+ovr[a.id]):(approvedAt?'approved':'pending'),tme]);
+}
+document.getElementById('csvbtn').onclick=()=>{
+  const head='area,zone,before_image,after_image,ai_first_answer,final_answer,operator_action,time';
+  const csv=[head,...logRows().map(r=>r.join(','))].join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download='decision_log.csv';a.click();URL.revokeObjectURL(a.href);
+};
+
+function tick(dt){
+  if(done){const p=cellUG(areas[areas.length-1]);placeRobot(p.u,p.g,p.u+.01,p.g);return;}
+  if(stage===2){if(!awaiting){awaiting=true;openPlan();}
+    const p=cellUG(areas[areas.length-1]);placeRobot(p.u,p.g,p.u+.01,p.g);return;}
+  let ph=cur();
+  if(!ph.list.length){advance();if(done||stage===2)return;ph=cur();}
+  t+=dt*SPEED;
+  while(t>=ph.per){                        // catch-up: holds wall-clock pace at any fps
+    t-=ph.per;
+    const a=ph.list[stepI];
+    if(a){ph.on(a);drawCell(a);}
+    stepI++;
+    if(stepI>=ph.list.length){advance();tex.needsUpdate=true;
+      if(done||stage===2)return;ph=cur();}
+  }
+  tex.needsUpdate=true;
+  phasetxt.textContent=`${ph.name} — ${Math.min(stepI+1,ph.list.length)}/${ph.list.length}`;
+  phasefill.style.width=(100*stepI/ph.list.length)+'%';
+  const a=ph.list[Math.min(stepI,ph.list.length-1)];
+  const b=ph.list[Math.min(stepI+1,ph.list.length-1)];
+  const pa=cellUG(a),pb=cellUG(b),k=Math.min(t/ph.per,1);
+  const u=pa.u+(pb.u-pa.u)*k,g=pa.g+(pb.g-pa.g)*k;
+  placeRobot(u,g,pb.u+(pb.u-pa.u)*.01+.002,pb.g);
+}
+function advance(){stepI=0;t=0;
+  if(stage===0)stage=1; else if(stage===1)stage=2; else finish();}
+function finish(){done=true;phasetxt.textContent='Done — click areas to inspect';phasefill.style.width='100%';}
+
+/* ================= picking / inspector ================= */
+const ray=new THREE.Raycaster(),mouse=new THREE.Vector2();
+let moved=false,downAt=[0,0];
+renderer.domElement.addEventListener('pointerdown',e=>{downAt=[e.clientX,e.clientY];moved=false;});
+renderer.domElement.addEventListener('pointermove',e=>{
+  if(Math.hypot(e.clientX-downAt[0],e.clientY-downAt[1])>5)moved=true;
+  mouse.set(e.clientX/innerWidth*2-1,-(e.clientY/innerHeight)*2+1);
+  ray.setFromCamera(mouse,cam);
+  const hit=ray.intersectObject(hull)[0];
+  const id=hit?areaAt(hit.uv):null;
+  if(id!==hoverId){const old=hoverId;hoverId=id;
+    if(old&&byCell[old.k])0; // noop
+    redraw(); document.body.style.cursor=id?'pointer':'default';}
+});
+function areaAt(uv){const c=Math.min(COLS-1,Math.floor(uv.x*COLS)),r=Math.min(ROWS-1,Math.floor(uv.y*ROWS));
+  const a=byCell[c+'_'+r];return a?a.id:null;}
+renderer.domElement.addEventListener('pointerup',e=>{
+  if(moved)return;
+  mouse.set(e.clientX/innerWidth*2-1,-(e.clientY/innerHeight)*2+1);
+  ray.setFromCamera(mouse,cam);
+  const hit=ray.intersectObject(hull)[0]; if(!hit)return;
+  const id=areaAt(hit.uv); if(!id)return;
+  const a=areas.find(x=>x.id===id);
+  if(stage===2&&editMode){                 // step 6: operator adjusts the plan
+    const order=['sufficient','more_cleaning','expert_inspection'];
+    const next=order[(order.indexOf(decisionOf(a))+1)%order.length];
+    if(next===a.decision)delete ovr[a.id]; else ovr[a.id]=next;
+    state[a.id]=decisionOf(a);
+    drawCell(a);tex.needsUpdate=true;refreshPlan();
+    if(insp.style.display==='block')openInspect(a);
+    return;
+  }
+  openInspect(a);
+});
+const insp=document.getElementById('inspect');
+document.getElementById('close').onclick=()=>insp.style.display='none';
+const CHIPBG={sufficient:'rgba(47,212,139,.18)',more_cleaning:'rgba(246,184,60,.18)',
+  unclear_image:'rgba(65,168,255,.18)',expert_inspection:'rgba(255,93,93,.18)',cleaned:'rgba(140,160,180,.18)',none:'rgba(140,160,180,.18)'};
+const NICE={sufficient:'✔ cleaning sufficient',more_cleaning:'↺ more cleaning needed',
+  unclear_image:'📷 clearer image needed',expert_inspection:'⚠ expert inspection',cleaned:'cleaned — not verified yet',none:'not visited yet'};
+function openInspect(a){
+  insp.style.display='block';
+  document.getElementById('aid').textContent='Area '+a.id+' · col '+a.col+' · row '+a.row;
+  document.getElementById('azone').textContent=a.zone.replace('_',' ');
+  const st=state[a.id]==='none'||state[a.id]==='cleaned'?state[a.id]:decisionOf(a);
+  const chip=document.getElementById('achip');
+  chip.textContent=NICE[st]||st; chip.style.background=CHIPBG[st];
+  chip.style.color=COLORS[st]||'#cbd8e6'; chip.style.border='1px solid '+(COLORS[st]||'#777');
+  document.getElementById('imgb').src=a.before_img; document.getElementById('imga').src=a.after_img;
+  const bits=[];
+  bits.push(a.fouled?'Area was fouled before the pass.':'Area was already clean before the pass.');
+  bits.push(a.dirty_after_pass1?'First cleaning pass did NOT fully clean it.':'First cleaning pass cleaned it.');
+  if(a.rephoto)bits.push('First photo was unusable → re-photo taken, then re-decided.');
+  if(a.decision==='more_cleaning')bits.push(a.final_dirty?'Targeted revisit still failed — flagged.':'Targeted revisit cleaned it.');
+  if(a.decision==='expert_inspection')bits.push('Sensitive zone / no improvement → human expert required before sign-off.');
+  if(a.decision==='sufficient'&&a.dirty_after_pass1)bits.push('⚠ WRONGLY passed as clean (this is the error we measure).');
+  if(ovr[a.id])bits.push('✎ Operator overrode the AI verdict to "'+ovr[a.id].replace('_',' ')+'" (logged).');
+  bits.push('AI verdict sampled from the measured test confusion matrix.');
+  document.getElementById('reason').innerHTML=bits.map(b=>'• '+b).join('<br>');
+}
+
+/* ================= strategy bars + sliders ================= */
+const S=DATA.strategies;
+const inputs=[
+ ['clean','Cleaning min / area',3,.5,10,.5],
+ ['check','Verify min / area',.5,.1,3,.1],
+ ['rephoto','Re-photo min',1,.2,5,.2],
+ ['over','Revisit overhead min',1,0,6,.5],
+ ['rate','Crew € / hour',150,40,500,10],
+ ['expert','Expert € / area',40,0,200,5],
+ ['pen','Penalty € / dirty area',60,0,400,10]];
+const V={};
+const slBox=document.getElementById('sliders');
+for(const[k,lab,def,min,max,st]of inputs){
+  V[k]=def;
+  const d=document.createElement('label');d.className='sl';
+  d.innerHTML=`${lab}<span class="v" id="v_${k}">${def}</span>
+   <input type="range" id="in_${k}" min="${min}" max="${max}" step="${st}" value="${def}">`;
+  slBox.appendChild(d);
+  d.querySelector('input').addEventListener('input',e=>{
+    V[k]=+e.target.value;document.getElementById('v_'+k).textContent=V[k];renderBars();});
+}
+function compute(s){
+  const timeH=(s.visits*V.clean+s.checks*V.check+s.rephotos*V.rephoto+s.revisits*(V.clean+V.over))/60;
+  const cost=timeH*V.rate+s.expert_areas*V.expert+s.dirty_unflagged*V.pen;
+  return{timeH,cost,dirty:s.dirty_unflagged,wrong:s.wrongly_clean};
+}
+const fmt=(x,d=1)=>x.toLocaleString('en',{maximumFractionDigits:d});
+function renderBars(){
+  const r={A:compute(S.A),B:compute(S.B),C:compute(S.C)};
+  const metrics=[
+   ['Time (hours)',s=>r[s].timeH,v=>fmt(v,1)+' h'],
+   ['Cost (€)',s=>r[s].cost,v=>'€'+fmt(v,0)],
+   ['Dirty areas left (silent)',s=>r[s].dirty,v=>fmt(v,1)],
+   ['Wrongly called clean',s=>r[s].wrong,v=>fmt(v,1)]];
+  const box=document.getElementById('bars');box.innerHTML='';
+  for(const[name,get,f]of metrics){
+    const max=Math.max(get('A'),get('B'),get('C'),1e-9);
+    const m=document.createElement('div');m.className='metric';
+    m.innerHTML=`<h3>${name}</h3>`+['A','B','C'].map(s=>`
+      <div class="bar"><b>${s}</b>
+        <div class="track"><div class="fill" style="width:${100*get(s)/max}%;
+          background:var(--${s})"></div></div>
+        <div class="val">${f(get(s))}</div></div>`).join('');
+    box.appendChild(m);
+  }
+}
+renderBars();
+
+/* ================= loop ================= */
+const clock=new THREE.Clock();
+function loop(){
+  requestAnimationFrame(loop);
+  const dt=Math.min(clock.getDelta(),.34),tm=clock.elapsedTime;
+  tick(dt);
+  const p=snowGe.attributes.position;
+  for(let i=0;i<snowN;i++){let y=p.getY(i)+dt*.12;if(y>0)y=-22;p.setY(i,y);}
+  p.needsUpdate=true;
+  ring.scale.setScalar(1+.15*Math.sin(tm*5));
+  controls.update();
+  renderer.render(scene,cam);
+}
+loop();
+addEventListener('resize',()=>{cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix();
+  renderer.setSize(innerWidth,innerHeight);});
+</script>
+</body>
+</html>

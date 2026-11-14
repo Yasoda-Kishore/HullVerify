@@ -1,0 +1,461 @@
+{
+ "rules_test": {
+  "n": 24,
+  "accuracy": 0.8333333333333334,
+  "false_sufficient": 0,
+  "dirty_total": 12,
+  "confusion": {
+   "sufficient": {
+    "sufficient": 3,
+    "more_cleaning": 4,
+    "unclear_image": 0,
+    "expert_inspection": 0
+   },
+   "more_cleaning": {
+    "sufficient": 0,
+    "more_cleaning": 7,
+    "unclear_image": 0,
+    "expert_inspection": 0
+   },
+   "unclear_image": {
+    "sufficient": 0,
+    "more_cleaning": 0,
+    "unclear_image": 5,
+    "expert_inspection": 0
+   },
+   "expert_inspection": {
+    "sufficient": 0,
+    "more_cleaning": 0,
+    "unclear_image": 0,
+    "expert_inspection": 5
+   }
+  }
+ },
+ "baseline_test": {
+  "n": 24,
+  "accuracy": 0.5833333333333334,
+  "false_sufficient": 0,
+  "dirty_total": 12,
+  "confusion": {
+   "sufficient": {
+    "sufficient": 7,
+    "more_cleaning": 0,
+    "unclear_image": 0,
+    "expert_inspection": 0
+   },
+   "more_cleaning": {
+    "sufficient": 0,
+    "more_cleaning": 7,
+    "unclear_image": 0,
+    "expert_inspection": 0
+   },
+   "unclear_image": {
+    "sufficient": 5,
+    "more_cleaning": 0,
+    "unclear_image": 0,
+    "expert_inspection": 0
+   },
+   "expert_inspection": {
+    "sufficient": 0,
+    "more_cleaning": 5,
+    "unclear_image": 0,
+    "expert_inspection": 0
+   }
+  }
+ },
+ "per_pair": [
+  {
+   "pair_id": "pair003",
+   "zone": "bilge_keel",
+   "before_file": "pair003_before.jpg",
+   "after_file": "pair003_after.jpg",
+   "label": "more_cleaning",
+   "split": "test",
+   "pred": "more_cleaning",
+   "quality": {
+    "sharpness": 2452.316650390625,
+    "brightness": 77.37721252441406,
+    "contrast": 22.54801368713379
+   },
+   "score_before": 0.127,
+   "score_after": 0.112,
+   "improvement": 0.014
+  },
+  {
+   "pair_id": "pair006",
+   "zone": "waterline",
+   "before_file": "pair006_before.jpg",
+   "after_file": "pair006_after.jpg",
+   "label": "sufficient",
+   "split": "test",
+   "pred": "more_cleaning",
+   "quality": {
+    "sharpness": 1345.0572509765625,
+    "brightness": 74.84864807128906,
+    "contrast": 17.802345275878906
+   },
+   "score_before": 0.122,
+   "score_after": 0.058,
+   "improvement": 0.064
+  },
+  {
+   "pair_id": "pair007",
+   "zone": "bow",
+   "before_file": "pair007_before.jpg",
+   "after_file": "pair007_after.jpg",
+   "label": "unclear_image",
+   "split": "test",
+   "pred": "unclear_image",
+   "quality": {
+    "sharpness": 1.4721609354019165,
+    "brightness": 85.80372619628906,
+    "contrast": 14.604952812194824
+   }
+  },
+  {
+   "pair_id": "pair010",
+   "zone": "bilge_keel",
+   "before_file": "pair010_before.jpg",
+   "after_file": "pair010_after.jpg",
+   "label": "sufficient",
+   "split": "test",
+   "pred": "sufficient",
+   "quality": {
+    "sharpness": 1066.6405029296875,
+    "brightness": 70.48251342773438,
+    "contrast": 14.372664451599121
+   },
+   "score_before": 0.139,
+   "score_after": 0.025,
+   "improvement": 0.114
+  },
+  {
+   "pair_id": "pair013",
+   "zone": "anodes",
+   "before_file": "pair013_before.jpg",
+   "after_file": "pair013_after.jpg",
+   "label": "expert_inspection",
+   "split": "test",
+   "pred": "expert_inspection",
+   "quality": {
+    "sharpness": 4081.64990234375,
+    "brightness": 103.34147644042969,
+    "contrast": 22.594900131225586
+   },
+   "score_before": 0.18,
+   "score_after": 0.159,
+   "improvement": 0.021
+  },
+  {
+   "pair_id": "pair014",
+   "zone": "waterline",
+   "before_file": "pair014_before.jpg",
+   "after_file": "pair014_after.jpg",
+   "label": "more_cleaning",
+   "split": "test",
+   "pred": "more_cleaning",
+   "quality": {
+    "sharpness": 3199.25537109375,
+    "brightness": 82.0981674194336,
+    "contrast": 23.242067337036133
+   },
+   "score_before": 0.135,
+   "score_after": 0.098,
+   "improvement": 0.038
+  },
+  {
+   "pair_id": "pair015",
+   "zone": "flat_bottom",
+   "before_file": "pair015_before.jpg",
+   "after_file": "pair015_after.jpg",
+   "label": "sufficient",
+   "split": "test",
+   "pred": "more_cleaning",
+   "quality": {
+    "sharpness": 1099.006591796875,
+    "brightness": 79.77180480957031,
+    "contrast": 17.717132568359375
+   },
+   "score_before": 0.127,
+   "score_after": 0.062,
+   "improvement": 0.065
+  },
+  {
+   "pair_id": "pair016",
+   "zone": "stern",
+   "before_file": "pair016_before.jpg",
+   "after_file": "pair016_after.jpg",
+   "label": "unclear_image",
+   "split": "test",
+   "pred": "unclear_image",
+   "quality": {
+    "sharpness": 93.21232604980469,
+    "brightness": 13.211692810058594,
+    "contrast": 4.406876087188721
+   }
+  },
+  {
+   "pair_id": "pair020",
+   "zone": "bilge_keel",
+   "before_file": "pair020_before.jpg",
+   "after_file": "pair020_after.jpg",
+   "label": "unclear_image",
+   "split": "test",
+   "pred": "unclear_image",
+   "quality": {
+    "sharpness": 1.356547236442566,
+    "brightness": 73.11495971679688,
+    "contrast": 7.825650215148926
+   }
+  },
+  {
+   "pair_id": "pair021",
+   "zone": "propeller",
+   "before_file": "pair021_before.jpg",
+   "after_file": "pair021_after.jpg",
+   "label": "expert_inspection",
+   "split": "test",
+   "pred": "expert_inspection",
+   "quality": {
+    "sharpness": 4308.2880859375,
+    "brightness": 101.92570495605469,
+    "contrast": 22.711294174194336
+   },
+   "score_before": 0.182,
+   "score_after": 0.146,
+   "improvement": 0.036
+  },
+  {
+   "pair_id": "pair023",
+   "zone": "waterline",
+   "before_file": "pair023_before.jpg",
+   "after_file": "pair023_after.jpg",
+   "label": "unclear_image",
+   "split": "test",
+   "pred": "unclear_image",
+   "quality": {
+    "sharpness": 1.255424976348877,
+    "brightness": 77.25238800048828,
+    "contrast": 6.950292587280273
+   }
+  },
+  {
+   "pair_id": "pair024",
+   "zone": "vertical_side",
+   "before_file": "pair024_before.jpg",
+   "after_file": "pair024_after.jpg",
+   "label": "more_cleaning",
+   "split": "test",
+   "pred": "more_cleaning",
+   "quality": {
+    "sharpness": 3065.183837890625,
+    "brightness": 72.43159484863281,
+    "contrast": 24.55194664001465
+   },
+   "score_before": 0.122,
+   "score_after": 0.097,
+   "improvement": 0.025
+  },
+  {
+   "pair_id": "pair026",
+   "zone": "bow",
+   "before_file": "pair026_before.jpg",
+   "after_file": "pair026_after.jpg",
+   "label": "more_cleaning",
+   "split": "test",
+   "pred": "more_cleaning",
+   "quality": {
+    "sharpness": 2782.529296875,
+    "brightness": 78.80780029296875,
+    "contrast": 22.144956588745117
+   },
+   "score_before": 0.119,
+   "score_after": 0.082,
+   "improvement": 0.037
+  },
+  {
+   "pair_id": "pair028",
+   "zone": "anodes",
+   "before_file": "pair028_before.jpg",
+   "after_file": "pair028_after.jpg",
+   "label": "expert_inspection",
+   "split": "test",
+   "pred": "expert_inspection",
+   "quality": {
+    "sharpness": 3631.395263671875,
+    "brightness": 76.47244262695312,
+    "contrast": 24.782012939453125
+   },
+   "score_before": 0.117,
+   "score_after": 0.107,
+   "improvement": 0.01
+  },
+  {
+   "pair_id": "pair031",
+   "zone": "bilge_keel",
+   "before_file": "pair031_before.jpg",
+   "after_file": "pair031_after.jpg",
+   "label": "more_cleaning",
+   "split": "test",
+   "pred": "more_cleaning",
+   "quality": {
+    "sharpness": 3101.643310546875,
+    "brightness": 79.55009460449219,
+    "contrast": 22.198225021362305
+   },
+   "score_before": 0.126,
+   "score_after": 0.082,
+   "improvement": 0.043
+  },
+  {
+   "pair_id": "pair033",
+   "zone": "bilge_keel",
+   "before_file": "pair033_before.jpg",
+   "after_file": "pair033_after.jpg",
+   "label": "sufficient",
+   "split": "test",
+   "pred": "sufficient",
+   "quality": {
+    "sharpness": 1092.10888671875,
+    "brightness": 96.51953125,
+    "contrast": 16.512971878051758
+   },
+   "score_before": 0.136,
+   "score_after": 0.042,
+   "improvement": 0.094
+  },
+  {
+   "pair_id": "pair034",
+   "zone": "anodes",
+   "before_file": "pair034_before.jpg",
+   "after_file": "pair034_after.jpg",
+   "label": "expert_inspection",
+   "split": "test",
+   "pred": "expert_inspection",
+   "quality": {
+    "sharpness": 3871.86767578125,
+    "brightness": 89.28570556640625,
+    "contrast": 23.457576751708984
+   },
+   "score_before": 0.129,
+   "score_after": 0.108,
+   "improvement": 0.021
+  },
+  {
+   "pair_id": "pair039",
+   "zone": "stern",
+   "before_file": "pair039_before.jpg",
+   "after_file": "pair039_after.jpg",
+   "label": "sufficient",
+   "split": "test",
+   "pred": "more_cleaning",
+   "quality": {
+    "sharpness": 1203.3409423828125,
+    "brightness": 74.26515197753906,
+    "contrast": 17.29755210876465
+   },
+   "score_before": 0.128,
+   "score_after": 0.051,
+   "improvement": 0.077
+  },
+  {
+   "pair_id": "pair040",
+   "zone": "bow",
+   "before_file": "pair040_before.jpg",
+   "after_file": "pair040_after.jpg",
+   "label": "unclear_image",
+   "split": "test",
+   "pred": "unclear_image",
+   "quality": {
+    "sharpness": 57.37677001953125,
+    "brightness": 10.515899658203125,
+    "contrast": 3.6655759811401367
+   }
+  },
+  {
+   "pair_id": "pair042",
+   "zone": "bow",
+   "before_file": "pair042_before.jpg",
+   "after_file": "pair042_after.jpg",
+   "label": "sufficient",
+   "split": "test",
+   "pred": "sufficient",
+   "quality": {
+    "sharpness": 1368.3062744140625,
+    "brightness": 73.07886505126953,
+    "contrast": 17.197893142700195
+   },
+   "score_before": 0.11,
+   "score_after": 0.048,
+   "improvement": 0.062
+  },
+  {
+   "pair_id": "pair043",
+   "zone": "stern",
+   "before_file": "pair043_before.jpg",
+   "after_file": "pair043_after.jpg",
+   "label": "more_cleaning",
+   "split": "test",
+   "pred": "more_cleaning",
+   "quality": {
+    "sharpness": 2471.68994140625,
+    "brightness": 84.96720886230469,
+    "contrast": 19.970808029174805
+   },
+   "score_before": 0.146,
+   "score_after": 0.098,
+   "improvement": 0.048
+  },
+  {
+   "pair_id": "pair045",
+   "zone": "bilge_keel",
+   "before_file": "pair045_before.jpg",
+   "after_file": "pair045_after.jpg",
+   "label": "more_cleaning",
+   "split": "test",
+   "pred": "more_cleaning",
+   "quality": {
+    "sharpness": 2819.126708984375,
+    "brightness": 98.34947204589844,
+    "contrast": 19.888111114501953
+   },
+   "score_before": 0.131,
+   "score_after": 0.086,
+   "improvement": 0.045
+  },
+  {
+   "pair_id": "pair047",
+   "zone": "stern",
+   "before_file": "pair047_before.jpg",
+   "after_file": "pair047_after.jpg",
+   "label": "sufficient",
+   "split": "test",
+   "pred": "more_cleaning",
+   "quality": {
+    "sharpness": 1122.8768310546875,
+    "brightness": 78.06639862060547,
+    "contrast": 17.295143127441406
+   },
+   "score_before": 0.128,
+   "score_after": 0.057,
+   "improvement": 0.07
+  },
+  {
+   "pair_id": "pair048",
+   "zone": "sea_chest",
+   "before_file": "pair048_before.jpg",
+   "after_file": "pair048_after.jpg",
+   "label": "expert_inspection",
+   "split": "test",
+   "pred": "expert_inspection",
+   "quality": {
+    "sharpness": 2955.336181640625,
+    "brightness": 76.13468933105469,
+    "contrast": 22.87204933166504
+   },
+   "score_before": 0.174,
+   "score_after": 0.125,
+   "improvement": 0.049
+  }
+ ]
+}
