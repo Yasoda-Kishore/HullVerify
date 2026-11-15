@@ -1,3 +1,5 @@
+   ![HullVerify 3D demo](hull_viewer_preview.png)
+
 # Hull Cleaning Verification — Synthetic Dataset + Decision Rules
 
 ## IMPORTANT: say this in the pitch
